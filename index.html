@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escudo HS</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-light: #f8f9fa;
+            --bg-card: #ffffff;
+            --accent-blue: #005f73;
+            --accent-blue-light: #0a9396;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --surface: #e9ecef;
+            --danger: #d90429;
+            --warning: #fca311;
+            --safe: #2a9d8f;
+            --border: #dee2e6;
+        }
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Sora', sans-serif;
+            color: var(--text-primary);
+        }
+        select, input[type='number'] {
+            color: var(--text-primary);
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+
+        const {
+            useState,
+            useEffect,
+            useMemo,
+            createContext,
+            useContext
+        } = React;
+
+        // --- DATA --- //
+        const statesData = {
+          PR: { name: "Paraná", emoji: "🌲", firstInstanceTendency: "alta", secondInstanceTendency: "confirmatória", secondInstanceRisk: "alto", multaECA_min: 3, multaECA_max: 20, avgTime1st: 18, avgTime2nd: 14, notes: "O Paraná apresenta, entre os estados com mais casos documentados, uma das tendências mais consistentes de confirmação da 1ª instância pelo TJ. Famílias neste estado encontram menor espaço de reversão em recurso. A estratégia de prevenção e documentação é especialmente relevante neste contexto.", sources: "Baseado em análise de decisões públicas do TJ-PR (2021–2025)" },
+          SP: { name: "São Paulo", emoji: "🏙️", firstInstanceTendency: "moderada-alta", secondInstanceTendency: "variável por comarca", secondInstanceRisk: "médio", multaECA_min: 3, multaECA_max: 20, avgTime1st: 20, avgTime2nd: 16, notes: "São Paulo apresenta grande variabilidade entre comarcas. A capital tende a maior rigor do que o interior. O comportamento do MP-SP também varia por região.", sources: "Baseado em análise de decisões públicas do TJ-SP (2021–2025)" },
+          MG: { name: "Minas Gerais", emoji: "⛰️", firstInstanceTendency: "moderada", secondInstanceTendency: "tendência confirmatória com redução de multas em alguns casos", secondInstanceRisk: "médio", multaECA_min: 3, multaECA_max: 15, avgTime1st: 22, avgTime2nd: 18, notes: "MG apresenta comportamento mais moderado em comparação com PR e RJ. Há relatos de arquivamento pelo MP-MG após apresentação de documentação educacional.", sources: "Baseado em análise de decisões públicas do TJ-MG (2021–2025)" },
+          SC: { name: "Santa Catarina", emoji: "🌊", firstInstanceTendency: "moderada", secondInstanceTendency: "tendência confirmatória com variação", secondInstanceRisk: "médio", multaECA_min: 3, multaECA_max: 15, avgTime1st: 16, avgTime2nd: 12, notes: "SC tem histórico de casos com desfechos variados. O caso Regiane (SC) é referência nacional de processo de longa duração.", sources: "Baseado em análise de decisões públicas do TJ-SC (2021–2025)" },
+          RS: { name: "Rio Grande do Sul", emoji: "🐴", firstInstanceTendency: "moderada", secondInstanceTendency: "variável — algumas decisões favoráveis a famílias documentadas", secondInstanceRisk: "médio", multaECA_min: 3, multaECA_max: 15, avgTime1st: 20, avgTime2nd: 15, notes: "RS apresenta histórico de decisões mais equilibradas. O MP-RS tende a maior cautela antes de abertura de ação formal.", sources: "Baseado em análise de decisões públicas do TJ-RS (2021–2025)" },
+          RJ: { name: "Rio de Janeiro", emoji: "🏖️", firstInstanceTendency: "alta", secondInstanceTendency: "confirmatória com variabilidade por comarca", secondInstanceRisk: "alto", multaECA_min: 3, multaECA_max: 20, avgTime1st: 24, avgTime2nd: 20, notes: "RJ apresenta alto risco, especialmente na capital. Processos tendem a ser mais longos e multas mais elevadas.", sources: "Baseado em análise de decisões públicas do TJ-RJ (2021–2025)" },
+          DF: { name: "Distrito Federal", emoji: "🏛️", firstInstanceTendency: "moderada", secondInstanceTendency: "equilibrado — há precedentes favoráveis a famílias", secondInstanceRisk: "médio-baixo", multaECA_min: 3, multaECA_max: 10, avgTime1st: 14, avgTime2nd: 10, notes: "O DF apresenta ambiente mais favorável ao debate constitucional sobre o tema. Acesso a advogados especializados é mais amplo.", sources: "Baseado em análise de decisões públicas do TJDFT (2021–2025)" },
+          Outro: { name: "Outro estado", emoji: "📍", firstInstanceTendency: "indeterminada", secondInstanceTendency: "dados insuficientes", secondInstanceRisk: "indeterminado", multaECA_min: 3, multaECA_max: 20, avgTime1st: 18, avgTime2nd: 14, notes: "Para estados com dados insuficientes, a consulta a advogado local especializado em direito de família é especialmente relevante.", sources: "Estimativa baseada em médias nacionais" }
+        };
+
+        const riskQuestions = [
+          { id: 1, text: "Em qual estado você mora?", type: "select", options: ["SP","RJ","MG","PR","SC","RS","DF","BA","GO","Outro"], riskMap: { PR: 0.4, SP: 0.2, RJ: 0.3, MG: 0.25, SC: 0.2, RS: 0.2, DF: 0.15, BA: 0.2, GO: 0.2, Outro: 0.2 } },
+          { id: 2, text: "Sua(s) criança(s) já frequentou escola alguma vez?", type: "yesno", riskIfYes: 0.3, riskIfNo: 0.0, hint: "Crianças que nunca foram matriculadas tendem a ter menor visibilidade no sistema de busca ativa escolar." },
+          { id: 3, text: "Sua(s) criança(s) está(ão) matriculada(s) atualmente em escola formal?", type: "yesno", riskIfNo: 0.5, riskIfYes: 0.0 },
+          { id: 4, text: "Já recebeu visita ou ofício do Conselho Tutelar?", type: "yesno", riskIfYes: 0.4, riskIfNo: 0.0 },
+          { id: 5, text: "Já recebeu notificação formal do Ministério Público?", type: "yesno", riskIfYes: 0.6, riskIfNo: 0.0 },
+          { id: 6, text: "Existe conflito familiar ou conjugal ativo que envolva a situação escolar das crianças?", type: "yesno", riskIfYes: 0.4, riskIfNo: 0.0, hint: "Disputas conjugais e familiares são frequentemente mencionadas em casos onde há denúncias ao Conselho Tutelar." },
+          { id: 7, text: "A situação educacional das crianças é amplamente comentada fora do círculo familiar próximo?", type: "yesno", riskIfYes: 0.25, riskIfNo: 0.0, hint: "A gestão da privacidade familiar é um fator relevante em muitos casos." },
+          { id: 8, text: "Você possui documentação educacional organizada (plano de estudos, registros, portfólio)?", type: "yesno", riskIfYes: -0.3, riskIfNo: 0.25 },
+          { id: 9, text: "Sua atividade profissional permite flexibilidade de local de trabalho?", type: "yesno", riskIfYes: -0.05, riskIfNo: 0.0, hint: "Informação contextual sobre mobilidade familiar." },
+          { id: 10, text: "Já houve abertura de inquérito ou ação judicial relacionada à situação educacional?", type: "yesno", riskIfYes: 0.8, riskIfNo: 0.0 }
+        ];
+
+        const processFlow = [
+          { step: 1, icon: "⚠️", location: "Denúncia", title: "Denúncia inicial", description: "Pode ser anônima (Disque 100, aplicativos, diretamente ao CT) ou identificada. Denúncias anônimas são aceitas e investigadas normalmente pelo Conselho Tutelar. As origens mais comuns observadas em casos documentados envolvem conflitos familiares, vizinhança e, em menor escala, profissionais de saúde ou educação.", infoBox: "Uma denúncia não implica condenação. O processo segue etapas de avaliação antes de qualquer determinação judicial." },
+          { step: 2, icon: "🏛️", location: "Conselho Tutelar", title: "Avaliação pelo Conselho Tutelar (CT)", description: "O CT recebe e avalia a denúncia. Em municípios maiores, é comum o envio de ofício antes de visita domiciliar. Em municípios menores, a visita pode ocorrer diretamente. O conselheiro tutelar pode arquivar o caso, emitir recomendação, ou encaminhar ao Ministério Público. A postura e critérios variam entre municípios e conselheiros.", infoBox: "Caso receba contato do CT: mantenha postura colaborativa, apresente documentação educacional organizada. Em caso de procedimento formal, é recomendável buscar orientação jurídica.", neutralNote: { title: "Sobre competência territorial", description: "Casos envolvendo crianças costumam tramitar na comarca de residência da família. A competência territorial é determinada pela residência no momento da instauração do procedimento. Qualquer mudança de domicílio durante processo judicial em andamento deve ser comunicada ao juízo competente. Avaliações sobre alterações de residência devem ser feitas com orientação jurídica individual.", disclaimer: "Esta informação é meramente descritiva do funcionamento do sistema. Não constitui orientação estratégica." } },
+          { step: 3, icon: "⚖️", location: "Ministério Público", title: "Ministério Público (MP)", description: "O MP recebe o encaminhamento do CT. Pode arquivar, emitir recomendação extrajudicial, ou abrir inquérito e propor ação. O comportamento do MP apresenta variação significativa entre estados, comarcas e promotores. Notificações do MP têm prazo de resposta — ignorá-las não é recomendável.", infoBox: "Caso receba notificação do MP: busque orientação jurídica imediatamente. Prazos de resposta são relevantes nesta fase." },
+          { step: 4, icon: "🔨", location: "1ª Instância", title: "Processo Judicial — 1ª Instância", description: "O processo tramita geralmente na Vara da Infância e Juventude ou Vara de Família. O enquadramento mais frequente é o Art. 249 do ECA (multa de 3 a 20 salários mínimos). O enquadramento no Art. 246 do Código Penal (abandono intelectual) é observado com muito menos frequência, pois requer prova de que a criança não está sendo educada — não apenas de que está fora da escola formal.", legalRef: "Art. 249 ECA: multa de 3 a 20 salários mínimos. Art. 246 CP: abandono intelectual — exige prova de ausência de instrução.", infoBox: "Apresentação de portfólio educacional organizado é relevante nesta fase." },
+          { step: 5, icon: "📋", location: "2ª Instância", title: "Recurso — Tribunal de Justiça Estadual", description: "Cabe recurso ao Tribunal de Justiça do estado. Observa-se, na maioria dos estados, tendência de confirmação da decisão de 1ª instância em casos de ensino domiciliar. A intensidade dessa tendência varia por estado — ver painel 'Por Estado'. Recursos geram custos adicionais (honorários e tempo de tramitação).", infoBox: "Avalie os custos adicionais do recurso em relação ao resultado provável antes de decidir. Use o Simulador de Custos." },
+          { step: 6, icon: "🏛️", location: "STF / STJ", title: "Instâncias Superiores", description: "Recurso ao STJ ou STF é possível em casos com fundamento constitucional. No RE 888815, o STF entendeu que o ensino domiciliar é compatível com a Constituição, desde que haja lei regulamentadora específica. Até o momento, não há lei federal em vigor disciplinando o tema. Tramitação nessa instância é longa e os custos são elevados.", infoBox: "Caminho aplicável apenas com fundamento constitucional sólido e assessoria jurídica especializada." }
+        ];
+
+        const preventionChecklist = [
+          { id: "plano_estudos", label: "Plano de estudos escrito e atualizado", priority: "essencial", detail: "Descreva o currículo, disciplinas, objetivos e metodologia. Pode ser simples, mas deve existir por escrito." },
+          { id: "capas_livros", label: "Capas dos materiais didáticos utilizados (digitalizadas)", priority: "essencial", detail: "Registro dos materiais em uso: livros, apostilas, plataformas. Digitalizar a capa é suficiente para documentação." },
+          { id: "amostras_materiais", label: "Amostras do material preenchido (início, meio e fim)", priority: "essencial", detail: "Registro de uso efetivo dos materiais — não é necessário documentar tudo, apenas amostras representativas." },
+          { id: "fotos_atividades", label: "Registro fotográfico de atividades educacionais e sociais", priority: "essencial", detail: "Fotos de atividades de estudo, esporte, socialização, saídas culturais, projetos. Data nas fotos é importante." },
+          { id: "videos_curtos", label: "Registros em vídeo curtos (até 1 minuto) de atividades", priority: "essencial", detail: "Vídeos de leitura, atividades práticas, interações sociais. Breves e datados." },
+          { id: "diario", label: "Diário ou calendário de atividades (registro semanal)", priority: "alta", detail: "Registro simples: data + atividade + criança. Não precisa ser elaborado." },
+          { id: "avaliacoes", label: "Registros de avaliações periódicas (mesmo informais)", priority: "alta", detail: "Exercícios avaliados, testes, redações corrigidas. Mostram acompanhamento do progresso." },
+          { id: "comunicacao_escrita", label: "Comunicações com órgãos públicos sempre por escrito", priority: "alta", detail: "E-mail com confirmação de recebimento para todo contato com CT, MP, secretarias." },
+          { id: "advogado_contato", label: "Contato de advogado especializado identificado preventivamente", priority: "alta", detail: "Ter o contato antes de precisar agiliza muito a resposta em caso de notificação." },
+          { id: "referencias", label: "Lista de referências: tutores, grupos, comunidade", priority: "média", detail: "Pessoas que podem atestar o desenvolvimento e a dedicação educacional." },
+          { id: "associacao", label: "Contato com associação de ensino domiciliar (ANED, etc.)", priority: "média", detail: "Associações oferecem suporte jurídico, modelos de documentos e rede de apoio." },
+          { id: "privacidade_redes", label: "Gestão de privacidade nas redes sociais e conversas", priority: "média", detail: "Considerar quais informações sobre a rotina familiar são compartilhadas publicamente." },
+          { id: "documentos_pessoais", label: "Documentos pessoais atualizados (identidade, certidão)", priority: "básica", detail: "Manter documentação em ordem e facilmente acessível." },
+          { id: "vacinacao", label: "Caderneta de vacinação em dia", priority: "básica", detail: "Vacinação em dia é recomendável e reduz pontos de contato com notificações do sistema de saúde." }
+        ];
+
+        const legalBasis = [
+          { id: "eca_249", ref: "Art. 249 ECA", title: "Descumprimento de obrigações parentais", summary: "Multa de 3 a 20 salários mínimos. É o enquadramento observado com mais frequência em casos relacionados ao ensino domiciliar." },
+          { id: "cp_246", ref: "Art. 246 CP", title: "Abandono intelectual", summary: "Pena de 15 dias a 1 mês ou multa. Observado com muito menos frequência. Requer prova de que a criança não está sendo instruída — não basta estar fora da escola formal." },
+          { id: "stf_re888815", ref: "STF — RE 888815", title: "Ensino domiciliar e Constituição", summary: "O STF entendeu que o ensino domiciliar é compatível com a Constituição, desde que haja lei regulamentadora específica. Até o momento, não há lei federal em vigor disciplinando o tema." },
+          { id: "tratados", ref: "Tratados Internacionais de Direitos Humanos", title: "Direito dos pais à escolha educacional", summary: "A Declaração Universal dos Direitos Humanos (Art. 26, §3°) e outros tratados internacionais reconhecem o direito dos pais de escolher o tipo de instrução a ser ministrada aos filhos. Tratados internacionais de direitos humanos têm status supralegal no ordenamento brasileiro." }
+        ];
+
+        const communicationScripts = {
+            script1: { title: "Com família e pessoas próximas", context: "Para situações em que há interesse genuíno e existe relação de confiança.", tone: "Informativo, maduro, sem confronto", example: `A educação das nossas crianças sempre foi nossa prioridade como pais.\n\nPesquisamos bastante sobre as diferentes opções educacionais disponíveis. Ao longo desse processo, ficamos atentos a dados como os indicadores de aprendizagem no Brasil e às diferentes abordagens pedagógicas existentes.\n\nConsultamos um advogado para entender nossos direitos. No RE 888815, o Supremo Tribunal Federal entendeu que o ensino domiciliar é compatível com a Constituição, embora dependa de regulamentação legal ainda não aprovada.\n\nPor ora, estamos acompanhando o desenvolvimento das crianças de perto, enquanto avaliamos as melhores opções para elas. Não é uma posição contra a escola — é uma escolha educacional informada.`, note: "Uma explicação fundamentada tende a ser recebida com mais abertura do que uma resposta defensiva ou evasiva." },
+            script2: { title: "Com conhecidos e terceiros", context: "Para situações em que não há proximidade e a pergunta é curiosidade ou julgamento.", tone: "Cordial, firme, sem detalhes", example: `Preferimos não comentar muito sobre a rotina e a vida privada da família — é uma questão de segurança mesmo, como qualquer família tem.\n\nSe tiver alguma dúvida específica, fico à disposição para conversar em outro momento.`, note: "Gestão de privacidade é um direito de qualquer família. Não é necessário justificar a opção de não compartilhar informações pessoais." },
+            script3: { title: "Orientação de privacidade para crianças", context: "Noções básicas de privacidade familiar, adequadas à faixa etária.", importantNote: "⚠️ IMPORTANTE: Ensinar privacidade não significa ocultar informações de autoridades competentes. Em caso de contato oficial (Conselho Tutelar, autoridades), os responsáveis devem sempre responder formalmente. Esta orientação trata apenas de conversas cotidianas.", example: `Explique à criança, de forma adequada à sua idade:\n\n"Existem coisas que são só da nossa família — como onde o papai e a mamãe trabalham, onde a gente costuma ir, como é a nossa rotina em casa. Não porque seja segredo ruim, mas porque a gente gosta de guardar essas coisas pra gente.\n\nSe alguém perguntar coisas assim, você pode falar: 'Não sei / a mamãe e o papai cuidam disso.'"`, note: "O objetivo é desenvolver noção de privacidade, não gerar ansiedade ou ensinamentos contraditórios sobre honestidade." }
+        };
+
+        // --- CONTEXT & HOOKS --- //
+        const AppContext = createContext();
+
+        const useLocalStorage = (key, initialValue) => {
+            const [storedValue, setStoredValue] = useState(() => {
+                try {
+                    const item = window.localStorage.getItem(key);
+                    return item ? JSON.parse(item) : initialValue;
+                } catch (error) {
+                    console.log(error);
+                    return initialValue;
+                }
+            });
+
+            const setValue = (value) => {
+                setStoredValue(prevValue => {
+                    const newValue = value instanceof Function ? value(prevValue) : value;
+                    try {
+                        window.localStorage.setItem(key, JSON.stringify(newValue));
+                    } catch (error) {
+                        console.log(error);
+                    }
+                    return newValue;
+                });
+            };
+            return [storedValue, setValue];
+        };
+
+        // --- COMPONENTS --- //
+
+        const Disclaimer = () => (
+            <div className="bg-yellow-100 border-yellow-300 text-yellow-900 text-xs p-4 rounded-lg my-4">
+                <h4 className="font-bold mb-2">⚠️ AVISO LEGAL</h4>
+                <p>Este aplicativo oferece apenas informações gerais baseadas em legislação e jurisprudência pública disponível. Não constitui consultoria jurídica, não garante resultados e não substitui a orientação de um advogado habilitado.</p>
+                <p className="mt-2">Este aplicativo não orienta como evitar autoridades ou descumprir determinações legais.</p>
+                <p className="mt-2">Os dados apresentados são estimativas e podem não refletir situações individuais específicas. Sempre consulte um profissional jurídico habilitado para sua situação.</p>
+            </div>
+        );
+
+        const Logo = () => (
+            <div className="flex items-center justify-center space-x-3">
+                <svg className="w-12 h-12 text-blue-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                <h1 className="text-3xl font-bold text-gray-800 font-sora">Escudo HS</h1>
+            </div>
+        );
+
+        const HomeScreen = ({ setActiveScreen }) => (
+            <div className="p-4">
+                <Logo />
+                <p className="text-center text-gray-600 mt-2 mb-6">Informação é a sua melhor preparação.</p>
+                <div className="bg-blue-50 border border-blue-200 text-blue-800 text-sm p-4 rounded-lg mb-6">
+                  <p>Este app oferece apenas informações gerais baseadas em legislação e jurisprudência pública. Não constitui consultoria jurídica, não garante resultados e não substitui a orientação de um advogado habilitado. Este aplicativo não orienta como evitar autoridades ou descumprir determinações legais.</p>
+                </div>
+                <button onClick={() => setActiveScreen('risk')} className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-lg text-lg mb-8 transition-colors">Entender meu perfil de risco</button>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <button onClick={() => setActiveScreen('risk')} className="bg-white border border-gray-200 rounded-lg p-4 text-center hover:bg-gray-50 transition-colors shadow-sm">
+                        <span className="text-2xl">🛡️</span>
+                        <p className="font-semibold mt-2">Risco</p>
+                    </button>
+                    <button onClick={() => setActiveScreen('costs')} className="bg-white border border-gray-200 rounded-lg p-4 text-center hover:bg-gray-50 transition-colors shadow-sm">
+                        <span className="text-2xl">💰</span>
+                        <p className="font-semibold mt-2">Custos</p>
+                    </button>
+                    <button onClick={() => setActiveScreen('flow')} className="bg-white border border-gray-200 rounded-lg p-4 text-center hover:bg-gray-50 transition-colors shadow-sm">
+                        <span className="text-2xl">📊</span>
+                        <p className="font-semibold mt-2">Fluxo</p>
+                    </button>
+                    <button onClick={() => setActiveScreen('communication')} className="bg-white border border-gray-200 rounded-lg p-4 text-center hover:bg-gray-50 transition-colors shadow-sm">
+                        <span className="text-2xl">💬</span>
+                        <p className="font-semibold mt-2">Comunicação</p>
+                    </button>
+                    <button onClick={() => setActiveScreen('states')} className="bg-white border border-gray-200 rounded-lg p-4 text-center hover:bg-gray-50 transition-colors shadow-sm">
+                        <span className="text-2xl">🗺️</span>
+                        <p className="font-semibold mt-2">Estados</p>
+                    </button>
+                     <button onClick={() => setActiveScreen('checklist')} className="bg-white border border-gray-200 rounded-lg p-4 text-center hover:bg-gray-50 transition-colors shadow-sm">
+                        <span className="text-2xl">📋</span>
+                        <p className="font-semibold mt-2">Checklist</p>
+                    </button>
+                </div>
+            </div>
+        );
+
+        const RiskScreen = () => {
+            const [answers, setAnswers] = useLocalStorage('riskAnswers', {});
+
+            const handleAnswerChange = (id, value) => {
+                setAnswers(prev => ({ ...prev, [id]: value }));
+            };
+
+            const riskScore = useMemo(() => {
+                return riskQuestions.reduce((total, q) => {
+                    const answer = answers[q.id];
+                    if (answer === undefined) return total;
+
+                    if (q.type === 'select') {
+                        return total + (q.riskMap[answer] || 0);
+                    }
+                    if (q.type === 'yesno') {
+                        if (answer === 'yes') return total + (q.riskIfYes || 0);
+                        if (answer === 'no') return total + (q.riskIfNo || 0);
+                    }
+                    return total;
+                }, 0);
+            }, [answers]);
+
+            const riskProfile = useMemo(() => {
+                if (riskScore <= 0.3) return { level: 'BAIXA EXPOSIÇÃO', color: 'text-green-400', bgColor: 'bg-green-900', text: 'Os fatores analisados sugerem menor exposição a riscos jurídicos imediatos. Manter documentação organizada é sempre recomendável.' };
+                if (riskScore <= 0.7) return { level: 'EXPOSIÇÃO MODERADA', color: 'text-yellow-400', bgColor: 'bg-yellow-900', text: 'Alguns fatores de atenção identificados. Recomenda-se avaliação jurídica individual e organização da documentação.' };
+                return { level: 'ALTA EXPOSIÇÃO', color: 'text-red-400', bgColor: 'bg-red-900', text: 'Múltiplos fatores de atenção identificados. Recomenda-se consulta com advogado especializado.' };
+            }, [riskScore]);
+            
+            const selectedState = answers[1];
+
+            return (
+                <div className="p-4">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Entenda seu perfil de risco</h2>
+                    <p className="text-gray-600 mb-6">As perguntas abaixo ajudam a identificar fatores geralmente associados a maior ou menor exposição jurídica. Não constituem avaliação legal do seu caso.</p>
+                    
+                    <div className="space-y-6">
+                        {riskQuestions.map(q => (
+                            <div key={q.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                                <p className="font-semibold mb-3">{q.id}. {q.text}</p>
+                                {q.type === 'select' && (
+                                    <select value={answers[q.id] || ''} onChange={e => handleAnswerChange(q.id, e.target.value)} className="w-full p-2 rounded">
+                                        <option value="">Selecione...</option>
+                                        {q.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                    </select>
+                                )}
+                                {q.type === 'yesno' && (
+                                    <div className="flex space-x-4">
+                                        <button onClick={() => handleAnswerChange(q.id, 'yes')} className={`flex-1 p-2 rounded transition-colors ${answers[q.id] === 'yes' ? 'bg-blue-600 text-white font-bold' : 'bg-gray-200 hover:bg-gray-300'}`}>Sim</button>
+                                        <button onClick={() => handleAnswerChange(q.id, 'no')} className={`flex-1 p-2 rounded transition-colors ${answers[q.id] === 'no' ? 'bg-blue-600 text-white font-bold' : 'bg-gray-200 hover:bg-gray-300'}`}>Não</button>
+                                    </div>
+                                )}
+                                {q.hint && <p className="text-xs text-gray-500 mt-3 italic">{q.hint}</p>}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className={`mt-8 p-4 rounded-lg ${riskProfile.bgColor.replace('bg-green-900', 'bg-green-100 border border-green-300').replace('bg-yellow-900', 'bg-yellow-100 border border-yellow-300').replace('bg-red-900', 'bg-red-100 border border-red-300')}`}>
+                        <div className={`text-center font-mono text-lg font-bold ${riskProfile.color.replace('text-green-400', 'text-green-800').replace('text-yellow-400', 'text-yellow-800').replace('text-red-400', 'text-red-800')}`}>{riskProfile.level}</div>
+                        <p className="text-center text-sm mt-2 text-gray-700">{riskProfile.text}</p>
+                    </div>
+                    
+                    {selectedState && statesData[selectedState] && (
+                        <div className="mt-4 bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                            <h4 className="font-bold text-blue-800 mb-2">Nota sobre {statesData[selectedState].name}</h4>
+                            <p className="text-sm text-gray-600">{statesData[selectedState].notes}</p>
+                        </div>
+                    )}
+
+                    <Disclaimer />
+                </div>
+            );
+        };
+
+        const CostsScreen = () => {
+            const [inputs, setInputs] = useLocalStorage('costInputs', {
+                salarioMinimo: 1412,
+                honorarios1: 5000,
+                honorarios2: 12000,
+                multasSM: 10,
+                tempo1: 18,
+                tempo2: 14,
+                recorrer: true,
+                limiteFinanceiro: 50000
+            });
+
+            const handleInputChange = (key, value) => {
+                setInputs(prev => ({ ...prev, [key]: parseFloat(value) || 0 }));
+            };
+            
+            const handleToggleChange = (key, value) => {
+                 setInputs(prev => ({ ...prev, [key]: value }));
+            }
+
+            const cenarios = useMemo(() => {
+                const SM = inputs.salarioMinimo;
+                return {
+                    conservador: { label: "Cenário A", sublabel: "Resolução administrativa", color: "bg-green-500", desc: "Caso encerrado na fase administrativa (CT ou MP), sem abertura de processo judicial.", honorarios: inputs.honorarios1 * 0.4, multa: 0, total: inputs.honorarios1 * 0.4, tempo: "2–4 meses", obs: "Observado em casos onde a documentação educacional apresentada foi considerada suficiente pela autoridade competente." },
+                    intermediario: { label: "Cenário B", sublabel: "Processo em 1ª instância", color: "bg-yellow-500", desc: "Processo tramita em 1ª instância, com possível aplicação de multa.", honorarios: inputs.honorarios1, multa: SM * (inputs.multasSM * 0.5), total: inputs.honorarios1 + (SM * inputs.multasSM * 0.5), tempo: `Aproximadamente ${inputs.tempo1} meses`, obs: "Multa calculada com base na faixa intermediária do Art. 249 do ECA." },
+                    pessimista: { label: "Cenário C", sublabel: "Processo em 1ª e 2ª instância", color: "bg-red-500", desc: "Processo percorre 1ª e 2ª instância, com multa próxima ao limite máximo.", honorarios: inputs.honorarios1 + (inputs.recorrer ? inputs.honorarios2 : 0), multa: SM * 20, total: inputs.honorarios1 + (inputs.recorrer ? inputs.honorarios2 : 0) + (SM * 20), tempo: `Aproximadamente ${inputs.tempo1 + (inputs.recorrer ? inputs.tempo2 : 0)} meses`, obs: "Multa calculada no limite máximo do Art. 249 do ECA (20 salários mínimos)." }
+                }
+            }, [inputs]);
+
+            const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+
+            const maxTotal = Math.max(cenarios.conservador.total, cenarios.intermediario.total, cenarios.pessimista.total);
+
+            return (
+                <div className="p-4">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Estimativa de custos jurídicos</h2>
+                    <div className="bg-blue-50 border border-blue-200 text-blue-800 text-sm p-4 rounded-lg mb-6">
+                        Os valores são estimativas ilustrativas baseadas em parâmetros legais gerais. Cada caso concreto pode variar significativamente. A penalidade prevista no Art. 249 do ECA é de 3 a 20 salários mínimos (multa pecuniária). Honorários de advogado variam por instância, região e complexidade do caso.
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4 mb-8">
+                        {/* Inputs */}
+                        <div className="bg-card border-teal border rounded-lg p-4 space-y-4">
+                            <div>
+                                <label className="text-sm text-secondary">Salário mínimo de referência</label>
+                                <input type="number" value={inputs.salarioMinimo} onChange={e => handleInputChange('salarioMinimo', e.target.value)} className="w-full bg-surface p-2 rounded mt-1 text-primary border border-teal" />
+                            </div>
+                            <div>
+                                <label className="text-sm text-secondary">Honorários 1ª instância: {formatCurrency(inputs.honorarios1)}</label>
+                                <input type="range" min="2000" max="15000" step="500" value={inputs.honorarios1} onChange={e => handleInputChange('honorarios1', e.target.value)} className="w-full" />
+                            </div>
+                             <div>
+                                <label className="text-sm text-secondary">Honorários 2ª instância: {formatCurrency(inputs.honorarios2)}</label>
+                                <input type="range" min="5000" max="25000" step="500" value={inputs.honorarios2} onChange={e => handleInputChange('honorarios2', e.target.value)} className="w-full" />
+                            </div>
+                            <div>
+                                <label className="text-sm text-secondary">Faixa de multa ECA: {inputs.multasSM} salários</label>
+                                <input type="range" min="3" max="20" step="1" value={inputs.multasSM} onChange={e => handleInputChange('multasSM', e.target.value)} className="w-full" />
+                            </div>
+                             <div>
+                                <label className="text-sm text-secondary">Tempo 1ª instância: {inputs.tempo1} meses</label>
+                                <input type="range" min="6" max="36" step="1" value={inputs.tempo1} onChange={e => handleInputChange('tempo1', e.target.value)} className="w-full" />
+                            </div>
+                             <div>
+                                <label className="text-sm text-secondary">Tempo 2ª instância: {inputs.tempo2} meses</label>
+                                <input type="range" min="6" max="24" step="1" value={inputs.tempo2} onChange={e => handleInputChange('tempo2', e.target.value)} className="w-full" />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm text-secondary">Considerar recurso para 2ª instância?</label>
+                                <div className="flex rounded-lg bg-surface p-1">
+                                    <button onClick={() => handleToggleChange('recorrer', true)} className={`px-3 py-1 text-sm rounded-md ${inputs.recorrer ? 'bg-teal text-dark' : ''}`}>Sim</button>
+                                    <button onClick={() => handleToggleChange('recorrer', false)} className={`px-3 py-1 text-sm rounded-md ${!inputs.recorrer ? 'bg-teal text-dark' : ''}`}>Não</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Chart */}
+                        <div className="bg-card border-teal border rounded-lg p-4 flex flex-col justify-around">
+                            {Object.values(cenarios).map(c => (
+                                <div key={c.label} className="mb-2">
+                                    <div className="flex justify-between items-center text-sm mb-1">
+                                        <span className="font-semibold">{c.label}</span>
+                                        <span className="font-mono font-semibold">{formatCurrency(c.total)}</span>
+                                    </div>
+                                    <div className="w-full bg-surface rounded-full h-4">
+                                        <div className={`${c.color} h-4 rounded-full`} style={{ width: `${(c.total / maxTotal) * 100}%` }}></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-4 mb-6">
+                        {Object.values(cenarios).map(c => (
+                            <div key={c.label} className={`bg-card border-t-4 rounded-b-lg p-4 ${c.color.replace('bg-','border-')}`}>
+                                <h3 className={`font-bold text-lg ${c.color.replace('bg-','text-')}`}>{c.label} - {c.sublabel}</h3>
+                                <p className="text-sm text-secondary mt-1 mb-3">{c.desc}</p>
+                                <p className="font-mono"><span className="font-semibold text-primary">Total: {formatCurrency(c.total)}</span></p>
+                                <p className="text-sm text-secondary">Honorários: {formatCurrency(c.honorarios)}</p>
+                                <p className="text-sm text-secondary">Multa: {formatCurrency(c.multa)}</p>
+                                <p className="text-sm text-secondary mt-2">Tempo: {c.tempo}</p>
+                                <p className="text-xs text-secondary mt-3 italic">{c.obs}</p>
+                            </div>
+                        ))}
+                    </div>
+                    
+                    <div className="bg-card border-teal border rounded-lg p-4">
+                        <label className="text-sm text-secondary">Meu limite financeiro estimado:</label>
+                        <input type="number" value={inputs.limiteFinanceiro} onChange={e => handleInputChange('limiteFinanceiro', e.target.value)} className="w-full bg-surface p-2 rounded mt-1 text-primary border border-teal" />
+                        {inputs.limiteFinanceiro < cenarios.pessimista.total && (
+                            <div className="mt-2 bg-yellow-100 border-yellow-300 text-yellow-900 text-sm p-3 rounded-lg">
+                                <p>ℹ️ O Cenário C supera o limite informado. Considere este fator na avaliação da situação com seu advogado.</p>
+                            </div>
+                        )}
+                    </div>
+
+                    <Disclaimer />
+                </div>
+            );
+        };
+
+        const FlowScreen = () => {
+            const [openStep, setOpenStep] = useState(null);
+            const [openNote, setOpenNote] = useState(false);
+
+            const toggleStep = (step) => {
+                setOpenStep(openStep === step ? null : step);
+            };
+
+            return (
+                <div className="p-4">
+                    <h2 className="text-2xl font-bold text-teal-light mb-2">Como funciona o processo jurídico</h2>
+                    <p className="text-secondary mb-6">Descrição informativa do fluxo típico. Cada caso tem particularidades. Consulte um advogado.</p>
+                    
+                    <div className="relative pl-8">
+                        <div className="absolute left-4 top-0 bottom-0 w-px bg-surface"></div>
+                        {processFlow.map(item => (
+                            <div key={item.step} className="mb-8 relative">
+                                <div className="absolute -left-8 top-3 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center font-mono font-bold text-blue-800">{item.step}</div>
+                                <div onClick={() => toggleStep(item.step)} className="cursor-pointer flex justify-between items-center py-2 px-2 -mx-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-800">{item.title}</h3>
+                                        <p className="text-sm text-blue-700 font-mono">{item.location}</p>
+                                    </div>
+                                    <span className={`transform transition-transform duration-300 text-gray-500 ${openStep === item.step ? 'rotate-180' : ''}`}>
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </span>
+                                </div>
+                                <div style={{ maxHeight: openStep === item.step ? '1000px' : '0', overflow: 'hidden', transition: 'max-height 0.5s ease-in-out' }}>
+                                    <div className="mt-4 pr-4">
+                                        <p className="text-secondary text-sm mb-3">{item.description}</p>
+                                        {item.legalRef && <p className="text-xs font-mono bg-surface p-2 rounded mb-3">{item.legalRef}</p>}
+                                        <div className="text-sm bg-blue-100 border-l-4 border-blue-500 p-3 text-blue-900 rounded-r-lg">
+                                            {item.infoBox}
+                                        </div>
+                                        {item.neutralNote && (
+                                            <div className="mt-4">
+                                                <button onClick={() => setOpenNote(!openNote)} className="w-full text-left bg-yellow-100 border border-yellow-300 p-3 rounded-lg flex justify-between items-center">
+                                                    <span className="font-semibold text-yellow-900">ℹ️ {item.neutralNote.title}</span>
+                                                    <span className={`transform transition-transform ${openNote ? 'rotate-180' : ''}`}>▼</span>
+                                                </button>
+                                                <div style={{ maxHeight: openNote ? '500px' : '0', overflow: 'hidden', transition: 'max-height 0.3s ease-in-out' }}>
+                                                    <div className="bg-yellow-100 border-l border-r border-b border-yellow-300 p-3 rounded-b-lg">
+                                                        <p className="text-sm text-yellow-900">{item.neutralNote.description}</p>
+                                                        <p className="text-xs text-yellow-800 mt-2 italic">{item.neutralNote.disclaimer}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <Disclaimer />
+                </div>
+            );
+        };
+
+        const CommunicationScreen = () => {
+            const [activeTab, setActiveTab] = useState('script1');
+            const [copySuccess, setCopySuccess] = useState('');
+
+            const handleCopy = (text) => {
+                navigator.clipboard.writeText(text).then(() => {
+                    setCopySuccess('Copiado!');
+                    setTimeout(() => setCopySuccess(''), 2000);
+                }, () => {
+                    setCopySuccess('Falha ao copiar.');
+                });
+            };
+
+            const tabs = {
+                script1: communicationScripts.script1,
+                script2: communicationScripts.script2,
+                script3: communicationScripts.script3,
+            };
+            const activeScript = tabs[activeTab];
+
+            return (
+                <div className="p-4">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Comunicação e privacidade</h2>
+                    <div className="bg-red-100 border-red-300 text-red-900 text-sm p-4 rounded-lg mb-6">
+                        Os exemplos abaixo tratam exclusivamente de comunicação interpessoal e gestão de privacidade familiar. Não constituem orientação jurídica nem instrução para omitir informações de autoridades competentes. Em caso de contato oficial de qualquer autoridade, os responsáveis devem sempre responder formalmente, preferencialmente com orientação jurídica.
+                    </div>
+
+                    <div className="flex border-b border-gray-300 mb-4">
+                        <button onClick={() => setActiveTab('script1')} className={`py-2 px-4 ${activeTab === 'script1' ? 'border-b-2 border-blue-700 text-blue-700' : 'text-gray-500'}`}>Família</button>
+                        <button onClick={() => setActiveTab('script2')} className={`py-2 px-4 ${activeTab === 'script2' ? 'border-b-2 border-blue-700 text-blue-700' : 'text-gray-500'}`}>Terceiros</button>
+                        <button onClick={() => setActiveTab('script3')} className={`py-2 px-4 ${activeTab === 'script3' ? 'border-b-2 border-blue-700 text-blue-700' : 'text-gray-500'}`}>Crianças</button>
+                    </div>
+
+                    <div className="bg-card border-teal border rounded-lg p-4">
+                        <h3 className="font-bold text-lg text-gray-800">{activeScript.title}</h3>
+                        <p className="text-sm text-gray-600 italic mb-4">{activeScript.context}</p>
+                        
+                        {activeScript.importantNote && (
+                             <p className="bg-yellow-100 border-yellow-300 text-yellow-900 text-sm p-3 rounded-lg my-4">{activeScript.importantNote}</p>
+                        )}
+
+                        <div className="bg-gray-100 p-4 rounded-lg whitespace-pre-wrap text-sm text-gray-800 relative">
+                            {activeScript.example}
+                            <button onClick={() => handleCopy(activeScript.example)} className="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 text-xs rounded">
+                                {copySuccess || 'Copiar'}
+                            </button>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-3 italic">{activeScript.note}</p>
+                    </div>
+                    <Disclaimer />
+                </div>
+            );
+        };
+
+        const StatesScreen = () => {
+            return (
+                <div className="p-4">
+                    <h2 className="text-2xl font-bold text-teal-light mb-2">Panorama por estado</h2>
+                    <p className="text-secondary mb-6">Dados são estimativas baseadas em jurisprudência pública disponível. Não representam levantamento estatístico formal. Situações individuais variam. Consulte um advogado local.</p>
+                    
+                    <div className="space-y-4">
+                        {Object.values(statesData).map(state => (
+                            <div key={state.name} className="bg-card border-teal border rounded-lg p-4">
+                                <div className="flex justify-between items-start">
+                                    <h3 className="text-xl font-bold">{state.emoji} {state.name}</h3>
+                                    <span className={`px-2 py-1 text-xs rounded-full font-mono ${state.secondInstanceRisk === 'alto' ? 'bg-red-500' : state.secondInstanceRisk === 'médio' ? 'bg-yellow-500' : 'bg-green-500'}`}>{state.secondInstanceRisk}</span>
+                                </div>
+                                <div className="mt-4 grid md:grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <p className="text-secondary">Tendência 1ª instância:</p>
+                                        <p className="font-semibold capitalize">{state.firstInstanceTendency.replace('-', ' a ')}</p>
+                                    </div>
+                                     <div>
+                                        <p className="text-secondary">Tendência 2ª instância:</p>
+                                        <p className="font-semibold capitalize">{state.secondInstanceTendency}</p>
+                                    </div>
+                                     <div>
+                                        <p className="text-secondary">Faixa de multa ECA:</p>
+                                        <p className="font-mono">{state.multaECA_min}-{state.multaECA_max} SM</p>
+                                    </div>
+                                     <div>
+                                        <p className="text-secondary">Tempo estimado (total):</p>
+                                        <p className="font-mono">{state.avgTime1st + state.avgTime2nd} meses</p>
+                                    </div>
+                                </div>
+                                <p className="text-sm text-secondary mt-4 bg-surface p-3 rounded-lg">{state.notes}</p>
+                                <p className="text-xs text-secondary mt-2 text-right italic">Fonte: {state.sources}</p>
+                            </div>
+                        ))}
+                    </div>
+                    <Disclaimer />
+                </div>
+            );
+        };
+        
+        const ChecklistScreen = () => {
+            const [checkedItems, setCheckedItems] = useLocalStorage('checklist', {});
+
+            const handleCheck = (id) => {
+                setCheckedItems(prev => ({ ...prev, [id]: !prev[id] }));
+            };
+
+            const groupedChecklist = preventionChecklist.reduce((acc, item) => {
+                acc[item.priority] = [...(acc[item.priority] || []), item];
+                return acc;
+            }, {});
+            
+            const totalItems = preventionChecklist.length;
+            const checkedCount = Object.values(checkedItems).filter(Boolean).length;
+            const progress = (checkedCount / totalItems) * 100;
+
+            const priorityOrder = ['essencial', 'alta', 'média', 'básica'];
+
+            return (
+                <div className="p-4">
+                    <h2 className="text-2xl font-bold text-teal-light mb-2">Checklist de Documentação</h2>
+                    <p className="text-secondary mb-4">Organize sua documentação para uma melhor preparação.</p>
+                    
+                    <div className="mb-6">
+                        <div className="flex justify-between text-sm text-secondary mb-1">
+                            <span>Progresso</span>
+                            <span>{checkedCount} / {totalItems}</span>
+                        </div>
+                        <div className="w-full bg-surface rounded-full h-2.5">
+                            <div className="bg-teal h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        {priorityOrder.map(priority => (
+                            <div key={priority}>
+                                <h3 className="font-bold text-lg capitalize text-teal mb-2 border-b border-teal pb-1">{priority}</h3>
+                                {groupedChecklist[priority].map(item => (
+                                    <div key={item.id} className="py-2">
+                                        <label className="flex items-start cursor-pointer">
+                                            <input type="checkbox" checked={!!checkedItems[item.id]} onChange={() => handleCheck(item.id)} className="mt-1 mr-3 h-5 w-5 rounded bg-surface border-teal text-teal focus:ring-teal" />
+                                            <div>
+                                                <span className={`${checkedItems[item.id] ? 'line-through text-secondary' : 'text-primary'}`}>{item.label}</span>
+                                                <p className="text-xs text-secondary mt-1">{item.detail}</p>
+                                            </div>
+                                        </label>
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                    <Disclaimer />
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [activeScreen, setActiveScreen] = useLocalStorage('activeScreen', 'home');
+
+            const screens = {
+                home: <HomeScreen setActiveScreen={setActiveScreen} />,
+                risk: <RiskScreen />,
+                costs: <CostsScreen />,
+                flow: <FlowScreen />,
+                communication: <CommunicationScreen />,
+                states: <StatesScreen />,
+                checklist: <ChecklistScreen />
+            };
+
+            const navItems = [
+                { id: 'home', icon: '🏠', label: 'Início' },
+                { id: 'risk', icon: '🛡️', label: 'Risco' },
+                { id: 'costs', icon: '💰', label: 'Custos' },
+                { id: 'flow', icon: '📊', label: 'Fluxo' },
+                { id: 'communication', icon: '💬', label: 'Comunicação' },
+                { id: 'states', icon: '🗺️', label: 'Estados' },
+            ];
+
+            return (
+                <div className="bg-light min-h-screen font-sora text-primary pb-24">
+                    <div className="max-w-4xl mx-auto">
+                        {screens[activeScreen]}
+                    </div>
+                    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around shadow-t-md">
+                        {navItems.map(item => (
+                            <button 
+                                key={item.id} 
+                                onClick={() => setActiveScreen(item.id)} 
+                                className={`flex-1 flex flex-col items-center justify-center p-2 text-xs transition-colors ${activeScreen === item.id ? 'text-blue-700 bg-gray-100' : 'text-gray-500'}`}>
+                                <span className="text-xl">{item.icon}</span>
+                                <span>{item.label}</span>
+                            </button>
+                        ))}
+                    </nav>
+                </div>
+            );
+        };
+
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
+
