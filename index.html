@@ -650,6 +650,10 @@
         const App = () => {
             const [activeScreen, setActiveScreen] = useLocalStorage('activeScreen', 'home');
 
+            useEffect(() => {
+                window.scrollTo(0, 0);
+            }, [activeScreen]);
+
             const screens = {
                 home: <HomeScreen setActiveScreen={setActiveScreen} />,
                 risk: <RiskScreen />,
