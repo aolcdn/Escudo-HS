@@ -63,41 +63,41 @@
 
         const riskQuestions = [
           { id: 1, text: "Em qual estado você mora?", type: "select", options: ["SP","RJ","MG","PR","SC","RS","DF","BA","GO","Outro"], riskMap: { PR: 0.4, SP: 0.2, RJ: 0.3, MG: 0.25, SC: 0.2, RS: 0.2, DF: 0.15, BA: 0.2, GO: 0.2, Outro: 0.2 } },
-          { id: 2, text: "Sua(s) criança(s) já frequentou escola alguma vez?", type: "yesno", riskIfYes: 0.3, riskIfNo: 0.0, hint: "Crianças que nunca foram matriculadas tendem a ter menor visibilidade no sistema de busca ativa escolar." },
-          { id: 3, text: "Sua(s) criança(s) está(ão) matriculada(s) atualmente em escola formal?", type: "yesno", riskIfNo: 0.5, riskIfYes: 0.0 },
-          { id: 4, text: "Já recebeu visita ou ofício do Conselho Tutelar?", type: "yesno", riskIfYes: 0.4, riskIfNo: 0.0 },
-          { id: 5, text: "Já recebeu notificação formal do Ministério Público?", type: "yesno", riskIfYes: 0.6, riskIfNo: 0.0 },
-          { id: 6, text: "Existe conflito familiar ou conjugal ativo que envolva a situação escolar das crianças?", type: "yesno", riskIfYes: 0.4, riskIfNo: 0.0, hint: "Disputas conjugais e familiares são frequentemente mencionadas em casos onde há denúncias ao Conselho Tutelar." },
-          { id: 7, text: "A situação educacional das crianças é amplamente comentada fora do círculo familiar próximo?", type: "yesno", riskIfYes: 0.25, riskIfNo: 0.0, hint: "A gestão da privacidade familiar é um fator relevante em muitos casos." },
-          { id: 8, text: "Você possui documentação educacional organizada (plano de estudos, registros, portfólio)?", type: "yesno", riskIfYes: -0.3, riskIfNo: 0.25 },
-          { id: 9, text: "Sua atividade profissional permite flexibilidade de local de trabalho?", type: "yesno", riskIfYes: -0.05, riskIfNo: 0.0, hint: "Informação contextual sobre mobilidade familiar." },
-          { id: 10, text: "Já houve abertura de inquérito ou ação judicial relacionada à situação educacional?", type: "yesno", riskIfYes: 0.8, riskIfNo: 0.0 }
+          { id: 2, text: "Seus filhos já foram matriculados em alguma escola antes?", type: "yesno", riskIfYes: 0.3, riskIfNo: 0.0, hint: "Crianças que nunca foram para a escola chamam menos atenção do sistema." },
+          { id: 3, text: "Seus filhos estão matriculados em alguma escola agora?", type: "yesno", riskIfNo: 0.5, riskIfYes: 0.0 },
+          { id: 4, text: "O Conselho Tutelar já bateu na sua porta ou mandou carta?", type: "yesno", riskIfYes: 0.4, riskIfNo: 0.0 },
+          { id: 5, text: "Você já recebeu alguma carta do juiz ou do promotor (Ministério Público)?", type: "yesno", riskIfYes: 0.6, riskIfNo: 0.0 },
+          { id: 6, text: "Existe alguma briga na família (separação, guarda) por causa do estudo em casa?", type: "yesno", riskIfYes: 0.4, riskIfNo: 0.0, hint: "Muitas denúncias começam com brigas entre parentes ou ex-parceiros." },
+          { id: 7, text: "As pessoas fora de casa (vizinhos, conhecidos) falam muito sobre seus filhos não irem à escola?", type: "yesno", riskIfYes: 0.25, riskIfNo: 0.0, hint: "Ser discreta ajuda muito a evitar problemas." },
+          { id: 8, text: "Você guarda as atividades, fotos e cadernos das crianças bem organizados?", type: "yesno", riskIfYes: -0.3, riskIfNo: 0.25 },
+          { id: 9, text: "O seu trabalho permite que você mude de cidade se precisar?", type: "yesno", riskIfYes: -0.05, riskIfNo: 0.0, hint: "Saber se a família pode se mudar caso a situação aperte." },
+          { id: 10, text: "Já existe algum processo na justiça sobre os estudos das crianças?", type: "yesno", riskIfYes: 0.8, riskIfNo: 0.0 }
         ];
 
         const processFlow = [
-          { step: 1, icon: "⚠️", location: "Denúncia", title: "Denúncia inicial", description: "Pode ser anônima (Disque 100, aplicativos, diretamente ao CT) ou identificada. Denúncias anônimas são aceitas e investigadas normalmente pelo Conselho Tutelar. As origens mais comuns observadas em casos documentados envolvem conflitos familiares, vizinhança e, em menor escala, profissionais de saúde ou educação.", infoBox: "Uma denúncia não implica condenação. O processo segue etapas de avaliação antes de qualquer determinação judicial." },
-          { step: 2, icon: "🏛️", location: "Conselho Tutelar", title: "Avaliação pelo Conselho Tutelar (CT)", description: "O CT recebe e avalia a denúncia. Em municípios maiores, é comum o envio de ofício antes de visita domiciliar. Em municípios menores, a visita pode ocorrer diretamente. O conselheiro tutelar pode arquivar o caso, emitir recomendação, ou encaminhar ao Ministério Público. A postura e critérios variam entre municípios e conselheiros.", infoBox: "Caso receba contato do CT: mantenha postura colaborativa, apresente documentação educacional organizada. Em caso de procedimento formal, é recomendável buscar orientação jurídica.", neutralNote: { title: "Sobre competência territorial", description: "Casos envolvendo crianças costumam tramitar na comarca de residência da família. A competência territorial é determinada pela residência no momento da instauração do procedimento. Qualquer mudança de domicílio durante processo judicial em andamento deve ser comunicada ao juízo competente. Avaliações sobre alterações de residência devem ser feitas com orientação jurídica individual.", disclaimer: "Esta informação é meramente descritiva do funcionamento do sistema. Não constitui orientação estratégica." } },
-          { step: 3, icon: "⚖️", location: "Ministério Público", title: "Ministério Público (MP)", description: "O MP recebe o encaminhamento do CT. Pode arquivar, emitir recomendação extrajudicial, ou abrir inquérito e propor ação. O comportamento do MP apresenta variação significativa entre estados, comarcas e promotores. Notificações do MP têm prazo de resposta — ignorá-las não é recomendável.", infoBox: "Caso receba notificação do MP: busque orientação jurídica imediatamente. Prazos de resposta são relevantes nesta fase." },
-          { step: 4, icon: "🔨", location: "1ª Instância", title: "Processo Judicial — 1ª Instância", description: "O processo tramita geralmente na Vara da Infância e Juventude ou Vara de Família. O enquadramento mais frequente é o Art. 249 do ECA (multa de 3 a 20 salários mínimos). O enquadramento no Art. 246 do Código Penal (abandono intelectual) é observado com muito menos frequência, pois requer prova de que a criança não está sendo educada — não apenas de que está fora da escola formal.", legalRef: "Art. 249 ECA: multa de 3 a 20 salários mínimos. Art. 246 CP: abandono intelectual — exige prova de ausência de instrução.", infoBox: "Apresentação de portfólio educacional organizado é relevante nesta fase." },
-          { step: 5, icon: "📋", location: "2ª Instância", title: "Recurso — Tribunal de Justiça Estadual", description: "Cabe recurso ao Tribunal de Justiça do estado. Observa-se, na maioria dos estados, tendência de confirmação da decisão de 1ª instância em casos de ensino domiciliar. A intensidade dessa tendência varia por estado — ver painel 'Por Estado'. Recursos geram custos adicionais (honorários e tempo de tramitação).", infoBox: "Avalie os custos adicionais do recurso em relação ao resultado provável antes de decidir. Use o Simulador de Custos." },
-          { step: 6, icon: "🏛️", location: "STF / STJ", title: "Instâncias Superiores", description: "Recurso ao STJ ou STF é possível em casos com fundamento constitucional. No RE 888815, o STF entendeu que o ensino domiciliar é compatível com a Constituição, desde que haja lei regulamentadora específica. Até o momento, não há lei federal em vigor disciplinando o tema. Tramitação nessa instância é longa e os custos são elevados.", infoBox: "Caminho aplicável apenas com fundamento constitucional sólido e assessoria jurídica especializada." }
+          { step: 1, icon: "⚠️", location: "Denúncia", title: "Como tudo começa (A Denúncia)", description: "Alguém avisa as autoridades. Pode ser anônimo (pelo Disque 100) ou alguém conhecido. A maioria das denúncias vem de parentes brigados, ex-parceiros ou vizinhos fofoqueiros.", infoBox: "Calma. Uma denúncia não significa que você perdeu. É só o começo de uma verificação." },
+          { step: 2, icon: "🏛️", location: "Conselho Tutelar", title: "A visita do Conselho Tutelar", description: "Eles recebem a denúncia e vão checar. Podem mandar uma carta antes ou bater direto na sua porta. O conselheiro pode só olhar, pedir para você matricular a criança, ou passar o caso para frente (para o promotor).", infoBox: "Se eles baterem na sua porta: seja educada, mostre os cadernos e fotos das crianças estudando. Se a coisa ficar séria, chame um advogado.", neutralNote: { title: "Sobre mudar de cidade", description: "O processo corre na cidade onde você mora quando a denúncia é feita. Se você se mudar no meio da confusão, precisa avisar o juiz. Fale com um advogado antes de fazer as malas.", disclaimer: "Isso é só para você entender como funciona, não é um conselho do que fazer." } },
+          { step: 3, icon: "⚖️", location: "Promotor (Ministério Público)", title: "O Promotor de Justiça", description: "O Conselho Tutelar passa o caso para o promotor. Ele pode arquivar (encerrar o assunto), pedir para você assinar um acordo, ou abrir um processo com o juiz. Se receber carta deles, não ignore!", infoBox: "Se chegar carta do promotor: procure um advogado na mesma hora. Os prazos são curtos." },
+          { step: 4, icon: "🔨", location: "Juiz da Cidade", title: "O Processo com o Juiz (1ª Instância)", description: "Aqui o caso vira um processo de verdade. O juiz vai avaliar. O mais comum é aplicarem uma multa em dinheiro (de 3 a 20 salários mínimos) por a criança estar fora da escola. É muito raro falarem em 'abandono intelectual' se você provar que ensina em casa.", legalRef: "Eles costumam cobrar multa baseada no Artigo 249 do ECA.", infoBox: "Ter pastas com as atividades e fotos das crianças salva vidas nessa hora." },
+          { step: 5, icon: "📋", location: "Tribunal do Estado", title: "Recorrer (2ª Instância)", description: "Se o juiz da cidade der a multa, você pode recorrer para os juízes do Estado (Tribunal). Mas atenção: na maioria dos estados, eles concordam com o primeiro juiz e mantêm a multa. Recorrer custa mais dinheiro com advogado e demora mais.", infoBox: "Pense bem se vale a pena gastar mais dinheiro recorrendo. Use a aba 'Custos' para simular." },
+          { step: 6, icon: "🏛️", location: "Brasília (STF / STJ)", title: "Juízes de Brasília", description: "É o último recurso. O Supremo já disse que ensinar em casa não é crime, mas falta uma lei aprovada para liberar de vez. Chegar até aqui demora muitos anos e custa uma fortuna.", infoBox: "Só dá para chegar aqui com um advogado muito especialista e muito dinheiro." }
         ];
 
         const preventionChecklist = [
-          { id: "plano_estudos", label: "Plano de estudos escrito e atualizado", priority: "essencial", detail: "Descreva o currículo, disciplinas, objetivos e metodologia. Pode ser simples, mas deve existir por escrito." },
-          { id: "capas_livros", label: "Capas dos materiais didáticos utilizados (digitalizadas)", priority: "essencial", detail: "Registro dos materiais em uso: livros, apostilas, plataformas. Digitalizar a capa é suficiente para documentação." },
-          { id: "amostras_materiais", label: "Amostras do material preenchido (início, meio e fim)", priority: "essencial", detail: "Registro de uso efetivo dos materiais — não é necessário documentar tudo, apenas amostras representativas." },
-          { id: "fotos_atividades", label: "Registro fotográfico de atividades educacionais e sociais", priority: "essencial", detail: "Fotos de atividades de estudo, esporte, socialização, saídas culturais, projetos. Data nas fotos é importante." },
-          { id: "videos_curtos", label: "Registros em vídeo curtos (até 1 minuto) de atividades", priority: "essencial", detail: "Vídeos de leitura, atividades práticas, interações sociais. Breves e datados." },
-          { id: "diario", label: "Diário ou calendário de atividades (registro semanal)", priority: "alta", detail: "Registro simples: data + atividade + criança. Não precisa ser elaborado." },
-          { id: "avaliacoes", label: "Registros de avaliações periódicas (mesmo informais)", priority: "alta", detail: "Exercícios avaliados, testes, redações corrigidas. Mostram acompanhamento do progresso." },
-          { id: "comunicacao_escrita", label: "Comunicações com órgãos públicos sempre por escrito", priority: "alta", detail: "E-mail com confirmação de recebimento para todo contato com CT, MP, secretarias." },
-          { id: "advogado_contato", label: "Contato de advogado especializado identificado preventivamente", priority: "alta", detail: "Ter o contato antes de precisar agiliza muito a resposta em caso de notificação." },
-          { id: "referencias", label: "Lista de referências: tutores, grupos, comunidade", priority: "média", detail: "Pessoas que podem atestar o desenvolvimento e a dedicação educacional." },
-          { id: "associacao", label: "Contato com associação de ensino domiciliar (ANED, etc.)", priority: "média", detail: "Associações oferecem suporte jurídico, modelos de documentos e rede de apoio." },
-          { id: "privacidade_redes", label: "Gestão de privacidade nas redes sociais e conversas", priority: "média", detail: "Considerar quais informações sobre a rotina familiar são compartilhadas publicamente." },
-          { id: "documentos_pessoais", label: "Documentos pessoais atualizados (identidade, certidão)", priority: "básica", detail: "Manter documentação em ordem e facilmente acessível." },
-          { id: "vacinacao", label: "Caderneta de vacinação em dia", priority: "básica", detail: "Vacinação em dia é recomendável e reduz pontos de contato com notificações do sistema de saúde." }
+          { id: "plano_estudos", label: "Plano de estudos escrito e atualizado", priority: "essencial", detail: "Escreva o que a criança vai aprender. Pode ser simples, num caderno, mas precisa estar escrito." },
+          { id: "capas_livros", label: "Fotos das capas dos livros e apostilas", priority: "essencial", detail: "Tire foto de tudo que vocês usam para estudar (livros, sites, apostilas)." },
+          { id: "amostras_materiais", label: "Fotos de atividades feitas (início, meio e fim)", priority: "essencial", detail: "Guarde algumas atividades que mostrem que a criança está aprendendo e avançando." },
+          { id: "fotos_atividades", label: "Fotos da criança estudando e passeando", priority: "essencial", detail: "Tire fotos deles lendo, brincando com outras crianças, em museus ou parques. Coloque a data." },
+          { id: "videos_curtos", label: "Vídeos curtos (até 1 minuto)", priority: "essencial", detail: "Grave vídeos rápidos deles lendo ou fazendo alguma atividade prática." },
+          { id: "diario", label: "Diário do que foi feito na semana", priority: "alta", detail: "Anote num caderno: a data, o que estudaram e quem estudou. Bem simples." },
+          { id: "avaliacoes", label: "Provinhas ou testes guardados", priority: "alta", detail: "Guarde redações ou exercícios corrigidos para mostrar que você acompanha se eles estão aprendendo." },
+          { id: "comunicacao_escrita", label: "Fale com órgãos públicos só por escrito", priority: "alta", detail: "Se precisar falar com Conselho Tutelar ou escola, mande e-mail ou carta com aviso de recebimento." },
+          { id: "advogado_contato", label: "Tenha o número de um advogado guardado", priority: "alta", detail: "Não espere o problema chegar para procurar quem pode te defender." },
+          { id: "referencias", label: "Lista de pessoas que conhecem vocês", priority: "média", detail: "Nome e telefone de pessoas que podem confirmar que você é uma boa mãe e ensina bem." },
+          { id: "associacao", label: "Conheça outras famílias que ensinam em casa", priority: "média", detail: "Estar em grupos ou associações ajuda muito a trocar ideias e ter apoio." },
+          { id: "privacidade_redes", label: "Cuidado com o que posta na internet", priority: "média", detail: "Pense bem antes de postar a rotina da sua casa para todo mundo ver." },
+          { id: "documentos_pessoais", label: "Documentos de todo mundo em dia", priority: "básica", detail: "Deixe RG, certidões e comprovante de endereço fáceis de achar." },
+          { id: "vacinacao", label: "Carteira de vacinação em dia", priority: "básica", detail: "Vacina atrasada é um dos motivos que mais chamam a atenção do posto de saúde e do Conselho." }
         ];
 
         const legalBasis = [
@@ -108,9 +108,9 @@
         ];
 
         const communicationScripts = {
-            script1: { title: "Com família e pessoas próximas", context: "Para situações em que há interesse genuíno e existe relação de confiança.", tone: "Informativo, maduro, sem confronto", example: `A educação das nossas crianças sempre foi nossa prioridade como pais.\n\nPesquisamos bastante sobre as diferentes opções educacionais disponíveis. Ao longo desse processo, ficamos atentos a dados como os indicadores de aprendizagem no Brasil e às diferentes abordagens pedagógicas existentes.\n\nConsultamos um advogado para entender nossos direitos. No RE 888815, o Supremo Tribunal Federal entendeu que o ensino domiciliar é compatível com a Constituição, embora dependa de regulamentação legal ainda não aprovada.\n\nPor ora, estamos acompanhando o desenvolvimento das crianças de perto, enquanto avaliamos as melhores opções para elas. Não é uma posição contra a escola — é uma escolha educacional informada.`, note: "Uma explicação fundamentada tende a ser recebida com mais abertura do que uma resposta defensiva ou evasiva." },
-            script2: { title: "Com conhecidos e terceiros", context: "Para situações em que não há proximidade e a pergunta é curiosidade ou julgamento.", tone: "Cordial, firme, sem detalhes", example: `Preferimos não comentar muito sobre a rotina e a vida privada da família — é uma questão de segurança mesmo, como qualquer família tem.\n\nSe tiver alguma dúvida específica, fico à disposição para conversar em outro momento.`, note: "Gestão de privacidade é um direito de qualquer família. Não é necessário justificar a opção de não compartilhar informações pessoais." },
-            script3: { title: "Orientação de privacidade para crianças", context: "Noções básicas de privacidade familiar, adequadas à faixa etária.", importantNote: "⚠️ IMPORTANTE: Ensinar privacidade não significa ocultar informações de autoridades competentes. Em caso de contato oficial (Conselho Tutelar, autoridades), os responsáveis devem sempre responder formalmente. Esta orientação trata apenas de conversas cotidianas.", example: `Explique à criança, de forma adequada à sua idade:\n\n"Existem coisas que são só da nossa família — como onde o papai e a mamãe trabalham, onde a gente costuma ir, como é a nossa rotina em casa. Não porque seja segredo ruim, mas porque a gente gosta de guardar essas coisas pra gente.\n\nSe alguém perguntar coisas assim, você pode falar: 'Não sei / a mamãe e o papai cuidam disso.'"`, note: "O objetivo é desenvolver noção de privacidade, não gerar ansiedade ou ensinamentos contraditórios sobre honestidade." }
+            script1: { title: "O que falar para parentes e família", context: "Para usar com avós, tios e pessoas que realmente se importam com vocês.", tone: "Tranquilo, amoroso, sem tentar dar aula de lei", example: `Nós escolhemos ensinar as crianças em casa porque achamos que é o melhor para eles agora.\n\nEstamos acompanhando os estudos bem de perto, com muito cuidado e carinho. Eles têm rotina, cadernos, e estão aprendendo super bem.\n\nA gente sabe que é diferente, mas estamos fazendo tudo com muita responsabilidade. Eles estão felizes e se desenvolvendo muito!`, note: "Falar com amor e mostrar que as crianças estão bem funciona muito melhor do que citar leis ou tentar convencer os parentes." },
+            script2: { title: "O que falar para curiosos e vizinhos", context: "Para usar com pessoas que não são íntimas e só querem fofocar.", tone: "Educado, rápido e cortando o assunto", example: `A gente prefere não falar muito sobre a rotina das crianças por segurança, sabe como é o mundo hoje em dia, né?\n\nMas eles estão ótimos, crescendo super rápido. Obrigada por perguntar!`, note: "Você não deve explicações da sua vida para vizinhos. Mude de assunto com educação." },
+            script3: { title: "O que ensinar para as crianças falarem", context: "Para proteger as crianças de perguntas chatas de adultos.", importantNote: "⚠️ IMPORTANTE: Se um policial ou alguém do Conselho Tutelar perguntar, a criança não deve mentir. Isso é só para conversas no parquinho ou com vizinhos.", example: `Ensine seus filhos de um jeito simples:\n\n"Filho, tem coisas que são só da nossa família, tipo quanto o papai ganha ou como é a nossa rotina em casa. A gente guarda isso pra gente.\n\nSe algum adulto que você não conhece muito bem ficar fazendo muita pergunta sobre a escola, você pode só sorrir e dizer: 'Ah, a mamãe e o papai que cuidam disso pra mim.' e voltar a brincar."`, note: "A ideia é ensinar a criança a se proteger de fofoqueiros, sem colocar medo nela." }
         };
 
         // --- CONTEXT & HOOKS --- //
@@ -145,10 +145,10 @@
 
         const Disclaimer = () => (
             <div className="bg-yellow-100 border-yellow-300 text-yellow-900 text-xs p-4 rounded-lg my-4">
-                <h4 className="font-bold mb-2">⚠️ AVISO LEGAL</h4>
-                <p>Este aplicativo oferece apenas informações gerais baseadas em legislação e jurisprudência pública disponível. Não constitui consultoria jurídica, não garante resultados e não substitui a orientação de um advogado habilitado.</p>
-                <p className="mt-2">Este aplicativo não orienta como evitar autoridades ou descumprir determinações legais.</p>
-                <p className="mt-2">Os dados apresentados são estimativas e podem não refletir situações individuais específicas. Sempre consulte um profissional jurídico habilitado para sua situação.</p>
+                <h4 className="font-bold mb-2">⚠️ AVISO IMPORTANTE</h4>
+                <p>Este aplicativo traz informações gerais para te ajudar a entender como as coisas funcionam. Ele não substitui a conversa com um advogado de verdade.</p>
+                <p className="mt-2">O objetivo aqui não é ensinar a fugir da lei, mas sim te ajudar a se organizar e se proteger.</p>
+                <p className="mt-2">Os valores e tempos mostrados são apenas estimativas. Cada caso é um caso. Se precisar, procure sempre um advogado.</p>
             </div>
         );
 
@@ -165,8 +165,14 @@
             <div className="p-4">
                 <Logo />
                 <p className="text-center text-gray-600 mt-2 mb-6">Informação é a sua melhor preparação.</p>
+                
+                <div className="bg-green-100 border-2 border-green-500 text-green-900 p-5 rounded-xl mb-6 shadow-sm text-center">
+                    <h3 className="font-bold text-lg mb-2">A Regra de Ouro 🌟</h3>
+                    <p className="text-sm">O melhor cenário de todos é <strong>sempre evitar que a denúncia aconteça</strong>. A discrição, o cuidado com quem você fala e a organização são os seus maiores escudos.</p>
+                </div>
+
                 <div className="bg-blue-50 border border-blue-200 text-blue-800 text-sm p-4 rounded-lg mb-6">
-                  <p>Este app oferece apenas informações gerais baseadas em legislação e jurisprudência pública. Não constitui consultoria jurídica, não garante resultados e não substitui a orientação de um advogado habilitado. Este aplicativo não orienta como evitar autoridades ou descumprir determinações legais.</p>
+                  <p>Este app foi feito para te ajudar a entender os riscos e se organizar. Lembre-se: ele não substitui um advogado. Use para se informar e se preparar.</p>
                 </div>
                 <button onClick={() => setActiveScreen('risk')} className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-lg text-lg mb-8 transition-colors">Entender meu perfil de risco</button>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -222,9 +228,9 @@
             }, [answers]);
 
             const riskProfile = useMemo(() => {
-                if (riskScore <= 0.3) return { level: 'BAIXA EXPOSIÇÃO', color: 'text-green-400', bgColor: 'bg-green-900', text: 'Os fatores analisados sugerem menor exposição a riscos jurídicos imediatos. Manter documentação organizada é sempre recomendável.' };
-                if (riskScore <= 0.7) return { level: 'EXPOSIÇÃO MODERADA', color: 'text-yellow-400', bgColor: 'bg-yellow-900', text: 'Alguns fatores de atenção identificados. Recomenda-se avaliação jurídica individual e organização da documentação.' };
-                return { level: 'ALTA EXPOSIÇÃO', color: 'text-red-400', bgColor: 'bg-red-900', text: 'Múltiplos fatores de atenção identificados. Recomenda-se consulta com advogado especializado.' };
+                if (riskScore <= 0.3) return { level: 'BAIXA EXPOSIÇÃO', color: 'text-green-400', bgColor: 'bg-green-900', text: 'Sua rotina chama pouca atenção. Continue mantendo tudo organizado e seja discreta.' };
+                if (riskScore <= 0.7) return { level: 'EXPOSIÇÃO MODERADA', color: 'text-yellow-400', bgColor: 'bg-yellow-900', text: 'Algumas coisas na sua rotina chamam atenção. É bom organizar seus documentos e ter cuidado com quem você conversa.' };
+                return { level: 'ALTA EXPOSIÇÃO', color: 'text-red-400', bgColor: 'bg-red-900', text: 'Sua situação chama bastante atenção. É muito importante organizar suas provas de estudo e, se puder, conversar com um advogado para se prevenir.' };
             }, [riskScore]);
             
             const selectedState = answers[1];
@@ -232,8 +238,12 @@
             return (
                 <div className="p-4">
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">Entenda seu perfil de risco</h2>
-                    <p className="text-gray-600 mb-6">As perguntas abaixo ajudam a identificar fatores geralmente associados a maior ou menor exposição jurídica. Não constituem avaliação legal do seu caso.</p>
                     
+                    <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-6 text-sm text-blue-800">
+                        <strong>Para que serve esta tela?</strong><br/>
+                        Responda as perguntas para descobrir se a sua rotina chama muita atenção e o que você pode mudar para evitar problemas.
+                    </div>
+
                     <div className="space-y-6">
                         {riskQuestions.map(q => (
                             <div key={q.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
@@ -295,9 +305,9 @@
             const cenarios = useMemo(() => {
                 const SM = inputs.salarioMinimo;
                 return {
-                    conservador: { label: "Cenário A", sublabel: "Resolução administrativa", color: "bg-green-500", desc: "Caso encerrado na fase administrativa (CT ou MP), sem abertura de processo judicial.", honorarios: inputs.honorarios1 * 0.4, multa: 0, total: inputs.honorarios1 * 0.4, tempo: "2–4 meses", obs: "Observado em casos onde a documentação educacional apresentada foi considerada suficiente pela autoridade competente." },
-                    intermediario: { label: "Cenário B", sublabel: "Processo em 1ª instância", color: "bg-yellow-500", desc: "Processo tramita em 1ª instância, com possível aplicação de multa.", honorarios: inputs.honorarios1, multa: SM * (inputs.multasSM * 0.5), total: inputs.honorarios1 + (SM * inputs.multasSM * 0.5), tempo: `Aproximadamente ${inputs.tempo1} meses`, obs: "Multa calculada com base na faixa intermediária do Art. 249 do ECA." },
-                    pessimista: { label: "Cenário C", sublabel: "Processo em 1ª e 2ª instância", color: "bg-red-500", desc: "Processo percorre 1ª e 2ª instância, com multa próxima ao limite máximo.", honorarios: inputs.honorarios1 + (inputs.recorrer ? inputs.honorarios2 : 0), multa: SM * 20, total: inputs.honorarios1 + (inputs.recorrer ? inputs.honorarios2 : 0) + (SM * 20), tempo: `Aproximadamente ${inputs.tempo1 + (inputs.recorrer ? inputs.tempo2 : 0)} meses`, obs: "Multa calculada no limite máximo do Art. 249 do ECA (20 salários mínimos)." }
+                    conservador: { label: "Cenário A", sublabel: "Resolve rápido", color: "bg-green-500", desc: "O caso acaba logo no Conselho Tutelar ou no Promotor, sem virar processo com o juiz.", honorarios: inputs.honorarios1 * 0.4, multa: 0, total: inputs.honorarios1 * 0.4, tempo: "2 a 4 meses", obs: "Acontece quando a família mostra os cadernos e fotos e eles aceitam." },
+                    intermediario: { label: "Cenário B", sublabel: "Processo com o Juiz", color: "bg-yellow-500", desc: "Vira processo com o juiz da cidade e você pode ter que pagar multa.", honorarios: inputs.honorarios1, multa: SM * (inputs.multasSM * 0.5), total: inputs.honorarios1 + (SM * inputs.multasSM * 0.5), tempo: `Mais ou menos ${inputs.tempo1} meses`, obs: "Multa calculada na média." },
+                    pessimista: { label: "Cenário C", sublabel: "Processo longo e recurso", color: "bg-red-500", desc: "O processo vai para o juiz da cidade e depois para o Tribunal do Estado. A multa pode ser a mais alta.", honorarios: inputs.honorarios1 + (inputs.recorrer ? inputs.honorarios2 : 0), multa: SM * 20, total: inputs.honorarios1 + (inputs.recorrer ? inputs.honorarios2 : 0) + (SM * 20), tempo: `Mais ou menos ${inputs.tempo1 + (inputs.recorrer ? inputs.tempo2 : 0)} meses`, obs: "Multa calculada no valor máximo da lei (20 salários mínimos)." }
                 }
             }, [inputs]);
 
@@ -308,23 +318,34 @@
             return (
                 <div className="p-4">
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">Estimativa de custos jurídicos</h2>
-                    <div className="bg-blue-50 border border-blue-200 text-blue-800 text-sm p-4 rounded-lg mb-6">
-                        Os valores são estimativas ilustrativas baseadas em parâmetros legais gerais. Cada caso concreto pode variar significativamente. A penalidade prevista no Art. 249 do ECA é de 3 a 20 salários mínimos (multa pecuniária). Honorários de advogado variam por instância, região e complexidade do caso.
+                    
+                    <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4 text-sm text-blue-800">
+                        <strong>Para que serve esta tela?</strong><br/>
+                        Veja quanto custa se defender de uma denúncia. Isso ajuda a entender por que evitar o problema é tão importante.
+                    </div>
+
+                    <div className="bg-green-100 border-2 border-green-500 text-green-900 p-4 rounded-xl mb-6 shadow-sm">
+                        <h3 className="font-bold text-lg mb-1">Cenário Ideal: R$ 0,00</h3>
+                        <p className="text-sm">Não entrar no radar do sistema. Sem denúncias, sem processos, sem dor de cabeça. A prevenção é o melhor investimento.</p>
+                    </div>
+
+                    <div className="bg-blue-100 border-blue-300 text-blue-900 text-sm p-4 rounded-lg mb-6">
+                        Os valores abaixo são só para você ter uma ideia. Cada caso é diferente. A multa para quem não manda o filho para a escola vai de 3 a 20 salários mínimos. E o preço do advogado muda muito dependendo da cidade.
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4 mb-8">
                         {/* Inputs */}
-                        <div className="bg-card border-teal border rounded-lg p-4 space-y-4">
+                        <div className="bg-white border-gray-200 border rounded-lg p-4 space-y-4">
                             <div>
                                 <label className="text-sm text-secondary">Salário mínimo de referência</label>
-                                <input type="number" value={inputs.salarioMinimo} onChange={e => handleInputChange('salarioMinimo', e.target.value)} className="w-full bg-surface p-2 rounded mt-1 text-primary border border-teal" />
+                                <input type="number" value={inputs.salarioMinimo} onChange={e => handleInputChange('salarioMinimo', e.target.value)} className="w-full bg-surface p-2 rounded mt-1 text-primary border border-gray-200" />
                             </div>
                             <div>
-                                <label className="text-sm text-secondary">Honorários 1ª instância: {formatCurrency(inputs.honorarios1)}</label>
+                                <label className="text-sm text-secondary">Preço do advogado (Juiz da cidade): {formatCurrency(inputs.honorarios1)}</label>
                                 <input type="range" min="2000" max="15000" step="500" value={inputs.honorarios1} onChange={e => handleInputChange('honorarios1', e.target.value)} className="w-full" />
                             </div>
                              <div>
-                                <label className="text-sm text-secondary">Honorários 2ª instância: {formatCurrency(inputs.honorarios2)}</label>
+                                <label className="text-sm text-secondary">Preço do advogado (Tribunal do Estado): {formatCurrency(inputs.honorarios2)}</label>
                                 <input type="range" min="5000" max="25000" step="500" value={inputs.honorarios2} onChange={e => handleInputChange('honorarios2', e.target.value)} className="w-full" />
                             </div>
                             <div>
@@ -332,24 +353,24 @@
                                 <input type="range" min="3" max="20" step="1" value={inputs.multasSM} onChange={e => handleInputChange('multasSM', e.target.value)} className="w-full" />
                             </div>
                              <div>
-                                <label className="text-sm text-secondary">Tempo 1ª instância: {inputs.tempo1} meses</label>
+                                <label className="text-sm text-secondary">Tempo com o Juiz da cidade: {inputs.tempo1} meses</label>
                                 <input type="range" min="6" max="36" step="1" value={inputs.tempo1} onChange={e => handleInputChange('tempo1', e.target.value)} className="w-full" />
                             </div>
                              <div>
-                                <label className="text-sm text-secondary">Tempo 2ª instância: {inputs.tempo2} meses</label>
+                                <label className="text-sm text-secondary">Tempo no Tribunal do Estado: {inputs.tempo2} meses</label>
                                 <input type="range" min="6" max="24" step="1" value={inputs.tempo2} onChange={e => handleInputChange('tempo2', e.target.value)} className="w-full" />
                             </div>
                             <div className="flex items-center justify-between">
-                                <label className="text-sm text-secondary">Considerar recurso para 2ª instância?</label>
+                                <label className="text-sm text-secondary">Considerar recorrer para o Tribunal do Estado?</label>
                                 <div className="flex rounded-lg bg-surface p-1">
-                                    <button onClick={() => handleToggleChange('recorrer', true)} className={`px-3 py-1 text-sm rounded-md ${inputs.recorrer ? 'bg-teal text-dark' : ''}`}>Sim</button>
-                                    <button onClick={() => handleToggleChange('recorrer', false)} className={`px-3 py-1 text-sm rounded-md ${!inputs.recorrer ? 'bg-teal text-dark' : ''}`}>Não</button>
+                                    <button onClick={() => handleToggleChange('recorrer', true)} className={`px-3 py-1 text-sm rounded-md ${inputs.recorrer ? 'bg-blue-600 text-white' : ''}`}>Sim</button>
+                                    <button onClick={() => handleToggleChange('recorrer', false)} className={`px-3 py-1 text-sm rounded-md ${!inputs.recorrer ? 'bg-blue-600 text-white' : ''}`}>Não</button>
                                 </div>
                             </div>
                         </div>
                         
                         {/* Chart */}
-                        <div className="bg-card border-teal border rounded-lg p-4 flex flex-col justify-around">
+                        <div className="bg-white border-gray-200 border rounded-lg p-4 flex flex-col justify-around">
                             {Object.values(cenarios).map(c => (
                                 <div key={c.label} className="mb-2">
                                     <div className="flex justify-between items-center text-sm mb-1">
@@ -378,12 +399,12 @@
                         ))}
                     </div>
                     
-                    <div className="bg-card border-teal border rounded-lg p-4">
+                    <div className="bg-white border-gray-200 border rounded-lg p-4">
                         <label className="text-sm text-secondary">Meu limite financeiro estimado:</label>
-                        <input type="number" value={inputs.limiteFinanceiro} onChange={e => handleInputChange('limiteFinanceiro', e.target.value)} className="w-full bg-surface p-2 rounded mt-1 text-primary border border-teal" />
+                        <input type="number" value={inputs.limiteFinanceiro} onChange={e => handleInputChange('limiteFinanceiro', e.target.value)} className="w-full bg-surface p-2 rounded mt-1 text-primary border border-gray-200" />
                         {inputs.limiteFinanceiro < cenarios.pessimista.total && (
                             <div className="mt-2 bg-yellow-100 border-yellow-300 text-yellow-900 text-sm p-3 rounded-lg">
-                                <p>ℹ️ O Cenário C supera o limite informado. Considere este fator na avaliação da situação com seu advogado.</p>
+                                <p>ℹ️ O Cenário C fica mais caro que o limite que você colocou. Pense bem nisso se precisar de um advogado.</p>
                             </div>
                         )}
                     </div>
@@ -403,7 +424,13 @@
 
             return (
                 <div className="p-4">
-                    <h2 className="text-2xl font-bold text-teal-light mb-2">Como funciona o processo jurídico</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Como funciona o processo jurídico</h2>
+                    
+                    <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4 text-sm text-blue-800">
+                        <strong>Para que serve esta tela?</strong><br/>
+                        Entenda o passo a passo do que acontece se o Conselho Tutelar bater na sua porta, para você não ser pega de surpresa.
+                    </div>
+
                     <p className="text-secondary mb-6">Descrição informativa do fluxo típico. Cada caso tem particularidades. Consulte um advogado.</p>
                     
                     <div className="relative pl-8">
@@ -474,6 +501,12 @@
             return (
                 <div className="p-4">
                     <h2 className="text-2xl font-bold text-gray-800 mb-4">Comunicação e privacidade</h2>
+                    
+                    <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4 text-sm text-blue-800">
+                        <strong>Para que serve esta tela?</strong><br/>
+                        Ideias simples do que falar (e o que não falar) para parentes e curiosos para evitar fofocas e denúncias.
+                    </div>
+
                     <div className="bg-red-100 border-red-300 text-red-900 text-sm p-4 rounded-lg mb-6">
                         Os exemplos abaixo tratam exclusivamente de comunicação interpessoal e gestão de privacidade familiar. Não constituem orientação jurídica nem instrução para omitir informações de autoridades competentes. Em caso de contato oficial de qualquer autoridade, os responsáveis devem sempre responder formalmente, preferencialmente com orientação jurídica.
                     </div>
@@ -484,7 +517,7 @@
                         <button onClick={() => setActiveTab('script3')} className={`py-2 px-4 ${activeTab === 'script3' ? 'border-b-2 border-blue-700 text-blue-700' : 'text-gray-500'}`}>Crianças</button>
                     </div>
 
-                    <div className="bg-card border-teal border rounded-lg p-4">
+                    <div className="bg-white border-gray-200 border rounded-lg p-4">
                         <h3 className="font-bold text-lg text-gray-800">{activeScript.title}</h3>
                         <p className="text-sm text-gray-600 italic mb-4">{activeScript.context}</p>
                         
@@ -508,12 +541,18 @@
         const StatesScreen = () => {
             return (
                 <div className="p-4">
-                    <h2 className="text-2xl font-bold text-teal-light mb-2">Panorama por estado</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Panorama por estado</h2>
+                    
+                    <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4 text-sm text-blue-800">
+                        <strong>Para que serve esta tela?</strong><br/>
+                        Veja como os juízes do seu estado costumam tratar as famílias educadoras, para você saber o nível de risco onde mora.
+                    </div>
+
                     <p className="text-secondary mb-6">Dados são estimativas baseadas em jurisprudência pública disponível. Não representam levantamento estatístico formal. Situações individuais variam. Consulte um advogado local.</p>
                     
                     <div className="space-y-4">
                         {Object.values(statesData).map(state => (
-                            <div key={state.name} className="bg-card border-teal border rounded-lg p-4">
+                            <div key={state.name} className="bg-white border-gray-200 border rounded-lg p-4">
                                 <div className="flex justify-between items-start">
                                     <h3 className="text-xl font-bold">{state.emoji} {state.name}</h3>
                                     <span className={`px-2 py-1 text-xs rounded-full font-mono ${state.secondInstanceRisk === 'alto' ? 'bg-red-500' : state.secondInstanceRisk === 'médio' ? 'bg-yellow-500' : 'bg-green-500'}`}>{state.secondInstanceRisk}</span>
@@ -566,7 +605,13 @@
 
             return (
                 <div className="p-4">
-                    <h2 className="text-2xl font-bold text-teal-light mb-2">Checklist de Documentação</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Checklist de Documentação</h2>
+                    
+                    <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4 text-sm text-blue-800">
+                        <strong>Para que serve esta tela?</strong><br/>
+                        Uma lista de tarefas simples para você organizar sua casa e seus documentos hoje mesmo. Vá marcando o que já fez.
+                    </div>
+
                     <p className="text-secondary mb-4">Organize sua documentação para uma melhor preparação.</p>
                     
                     <div className="mb-6">
@@ -575,18 +620,18 @@
                             <span>{checkedCount} / {totalItems}</span>
                         </div>
                         <div className="w-full bg-surface rounded-full h-2.5">
-                            <div className="bg-teal h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
+                            <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
                         </div>
                     </div>
 
                     <div className="space-y-4">
                         {priorityOrder.map(priority => (
                             <div key={priority}>
-                                <h3 className="font-bold text-lg capitalize text-teal mb-2 border-b border-teal pb-1">{priority}</h3>
+                                <h3 className="font-bold text-lg capitalize text-blue-700 mb-2 border-b border-blue-200 pb-1">{priority}</h3>
                                 {groupedChecklist[priority].map(item => (
                                     <div key={item.id} className="py-2">
                                         <label className="flex items-start cursor-pointer">
-                                            <input type="checkbox" checked={!!checkedItems[item.id]} onChange={() => handleCheck(item.id)} className="mt-1 mr-3 h-5 w-5 rounded bg-surface border-teal text-teal focus:ring-teal" />
+                                            <input type="checkbox" checked={!!checkedItems[item.id]} onChange={() => handleCheck(item.id)} className="mt-1 mr-3 h-5 w-5 rounded bg-surface border-gray-300 text-blue-600 focus:ring-blue-600" />
                                             <div>
                                                 <span className={`${checkedItems[item.id] ? 'line-through text-secondary' : 'text-primary'}`}>{item.label}</span>
                                                 <p className="text-xs text-secondary mt-1">{item.detail}</p>
